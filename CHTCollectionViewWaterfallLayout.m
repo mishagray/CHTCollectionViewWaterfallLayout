@@ -72,9 +72,14 @@ const int unionSize = 20;
 	NSInteger idx = 0;
 	_itemCount = [[self collectionView] numberOfItemsInSection:0];
     
-	NSAssert(_columnCount > 1, @"columnCount for UICollectionViewWaterfallLayout should be greater than 1.");
-	CGFloat width = self.collectionView.frame.size.width - _sectionInset.left - _sectionInset.right;
-	_interitemSpacing = floorf((width - _columnCount * _itemWidth) / (_columnCount - 1));
+	//NSAssert(_columnCount > 1, @"columnCount for UICollectionViewWaterfallLayout should be greater than 1.");
+	// for one column.
+    if(_columnCount > 1){
+        CGFloat width = self.collectionView.frame.size.width - _sectionInset.left - _sectionInset.right;
+        _interitemSpacing = floorf((width - _columnCount * _itemWidth) / (_columnCount - 1));
+    }else {
+        _interitemSpacing = (_sectionInset.top + _sectionInset.bottom) * 0.5;
+    }
     
 	_itemAttributes = [NSMutableArray arrayWithCapacity:_itemCount];
 	_columnHeights = [NSMutableArray arrayWithCapacity:_columnCount];
