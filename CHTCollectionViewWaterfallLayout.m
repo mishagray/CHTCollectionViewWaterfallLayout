@@ -40,12 +40,26 @@ const int unionSize = 20;
 		[self invalidateLayout];
 	}
 }
+- (void)setHeaderReferenceHeight:(CGFloat)headerReferenceHeight {
+    if (_headerReferenceHeight != headerReferenceHeight) {
+        _headerReferenceHeight = headerReferenceHeight;
+        [self invalidateLayout];
+    }
+}
 
 #pragma mark - Init
 - (void)commonInit {
 	_columnCount = 2;
 	_itemWidth = 140.0f;
 	_sectionInset = UIEdgeInsetsZero;
+}
+
+- (id)initWithCoder:(NSCoder *)aDecoder {
+    self = [super init];
+    if (self) {
+        [self commonInit];
+    }
+    return self;
 }
 
 - (id)init {
@@ -83,8 +97,9 @@ const int unionSize = 20;
     
 	_itemAttributes = [NSMutableArray arrayWithCapacity:_itemCount];
 	_columnHeights = [NSMutableArray arrayWithCapacity:_columnCount];
+    CGFloat startHeight = _sectionInset.top + [self heightForHeaderInSection:0]; // todo fix for multi section
 	for (idx = 0; idx < _columnCount; idx++) {
-		[_columnHeights addObject:@(_sectionInset.top)];
+		[_columnHeights addObject:@(startHeight)];
 	}
     
 	// Item will be put into shortest column.
@@ -136,6 +151,11 @@ const int unionSize = 20;
 	NSInteger begin = 0, end = self.unionRects.count;
 	NSMutableArray *attrs = [NSMutableArray array];
     
+    UICollectionViewLayoutAttributes *headerAttributes = [self layoutAttributesForSupplementaryViewOfKind:UICollectionElementKindSectionHeader atIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]];
+    if (headerAttributes && CGRectIntersectsRect(rect, headerAttributes.frame)) {
+        [attrs addObject:headerAttributes];
+    }
+    
 	for (i = 0; i < self.unionRects.count; i++) {
 		if (CGRectIntersectsRect(rect, [self.unionRects[i] CGRectValue])) {
 			begin = i * unionSize;
@@ -159,6 +179,20 @@ const int unionSize = 20;
 
 - (BOOL)shouldInvalidateLayoutForBoundsChange:(CGRect)newBounds {
 	return NO;
+}
+
+- (UICollectionViewLayoutAttributes *)layoutAttributesForSupplementaryViewOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath {
+    if (![kind isEqualToString:UICollectionElementKindSectionHeader]) {
+        return nil;
+    }
+    CGFloat referenceHeight = [self heightForHeaderInSection:indexPath.section];
+    if (ABS(referenceHeight)<=0.1) {
+        return nil;
+    }
+    
+    UICollectionViewLayoutAttributes *attributes = [UICollectionViewLayoutAttributes layoutAttributesForSupplementaryViewOfKind:UICollectionElementKindSectionHeader withIndexPath:[NSIndexPath indexPathForItem:0 inSection:indexPath.section]];
+    attributes.frame = CGRectMake(0, 0, CGRectGetWidth(self.collectionView.bounds), referenceHeight);
+    return attributes;
 }
 
 #pragma mark - Private Methods
@@ -193,6 +227,16 @@ const int unionSize = 20;
 	}];
     
 	return index;
+}
+
+- (CGFloat)heightForHeaderInSection:(NSUInteger)section {
+    CGFloat referenceHeight = 0.0;
+    if ([self.delegate respondsToSelector:@selector(collectionView:layout:referenceHeightForHeaderInSection:)]) {
+        referenceHeight = [self.delegate collectionView:self.collectionView layout:self referenceHeightForHeaderInSection:section];
+    } else {
+        referenceHeight = self.headerReferenceHeight;
+    }
+    return referenceHeight;
 }
 
 @end

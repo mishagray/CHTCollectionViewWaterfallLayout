@@ -12,6 +12,10 @@
 - (CGFloat)collectionView:(UICollectionView *)collectionView
                    layout:(CHTCollectionViewWaterfallLayout *)collectionViewLayout
  heightForItemAtIndexPath:(NSIndexPath *)indexPath;
+
+- (CGFloat)collectionView:(UICollectionView *)collectionView
+                   layout:(CHTCollectionViewWaterfallLayout*)collectionViewLayout
+referenceHeightForHeaderInSection:(NSInteger)section;
 @end
 
 @interface CHTCollectionViewWaterfallLayout : UICollectionViewLayout
@@ -19,4 +23,5 @@
 @property (nonatomic, assign) NSUInteger columnCount; // How many columns
 @property (nonatomic, assign) CGFloat itemWidth; // Width for every column
 @property (nonatomic, assign) UIEdgeInsets sectionInset; // The margins used to lay out content in a section
+@property (nonatomic) CGFloat headerReferenceHeight;
 @end
